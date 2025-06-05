@@ -1,4 +1,4 @@
-# API Adapter Framework
+# Base Python Persona Builder
 
 A simple, incremental Python framework for building API data adapters with a focus on blockchain and DeFi integrations. Now includes comprehensive wallet persona analysis for Base chain.
 
