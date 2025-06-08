@@ -394,66 +394,6 @@ class EtherscanAdapter(BaseAdapter):
         )
         return self.get("", params=params)
 
-    def get_mined_blocks(
-        self, address: str, blocktype: str = "blocks", page: int = 1, offset: int = 10
-    ) -> Optional[Dict]:
-        """
-        Get list of blocks validated by address.
-
-        Args:
-            address: Ethereum address (miner/validator)
-            blocktype: Type of blocks ('blocks' for canonical, 'uncles' for uncle blocks)
-            page: Page number for pagination
-            offset: Number of blocks per page
-
-        Returns:
-            Mined blocks list or None if failed
-        """
-        params = self._build_params(
-            module="account",
-            action="getminedblocks",
-            address=address,
-            blocktype=blocktype,
-            page=page,
-            offset=offset,
-        )
-        return self.get("", params=params)
-
-    def get_beacon_withdrawals(
-        self,
-        address: str,
-        startblock: int = 0,
-        endblock: int = 99999999,
-        page: int = 1,
-        offset: int = 100,
-        sort: str = "asc",
-    ) -> Optional[Dict]:
-        """
-        Get beacon chain withdrawals by address and block range.
-
-        Args:
-            address: Ethereum address to check withdrawals for
-            startblock: Starting block number
-            endblock: Ending block number
-            page: Page number for pagination
-            offset: Number of withdrawals per page
-            sort: Sort order ('asc' or 'desc')
-
-        Returns:
-            Beacon withdrawal list or None if failed
-        """
-        params = self._build_params(
-            module="account",
-            action="txsBeaconWithdrawal",
-            address=address,
-            startblock=startblock,
-            endblock=endblock,
-            page=page,
-            offset=offset,
-            sort=sort,
-        )
-        return self.get("", params=params)
-
 
 def example_usage():
     """Example usage of the Etherscan adapter."""

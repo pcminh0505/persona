@@ -1,455 +1,357 @@
-# Base Python Persona Builder
+# Modular Portfolio Analyzer
 
-A simple, incremental Python framework for building API data adapters with a focus on blockchain and DeFi integrations. Now includes comprehensive wallet persona analysis for Base chain.
+A clean, modular architecture for analyzing cryptocurrency wallets on Base chain with comprehensive persona classification.
 
-## Features
+## 🏗️ Architecture Overview
 
-- **BaseAdapter Pattern**: Extensible base class for creating specific API adapters
-- **Built-in Error Handling**: Robust error management for network issues
-- **Session Management**: Efficient request handling with connection pooling
-- **Environment Configuration**: Secure credential management
-- **Type Hints**: Better code clarity and IDE support
-- **Multiple Blockchain APIs**: Ready-to-use adapters for Zerion, Etherscan, and Base chain APIs
-- **Modular Design**: Organized adapters package for easy extension
-- **Persona Analysis**: Advanced wallet behavior analysis and classification system
-- **Portfolio Analytics**: Real-time portfolio valuation and composition analysis
-- **Activity Tracking**: Comprehensive DeFi activity and swap analysis
-
-## Architecture
-
-The framework uses an adapter pattern where:
-
-- `adapters.BaseAdapter`: Abstract base class for all API adapters
-- `adapters.EtherscanAdapter`: Ethereum blockchain data via Etherscan API (supports Base chain with chainId 8453)
-- `adapters.ZerionAdapter`: DeFi portfolio data via Zerion API
-- `PersonaAnalyzer`: Wallet behavior analysis and classification for Base chain
-- `PortfolioAnalyzer`: Portfolio composition and valuation analysis
-
-## Installation
-
-1. Clone this repository
-2. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-3. Set up environment variables (see Environment Configuration section)
-
-## Quick Start
-
-### Using Etherscan Adapter for Base Chain
-
-```python
-from adapters.etherscan import EtherscanAdapter
-
-# Initialize with Base chain ID (8453)
-adapter = EtherscanAdapter(chain_id=8453)
-
-# Test authentication
-if adapter.authenticate():
-    # Get Ether balance
-    balance = adapter.get_ether_balance("0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045")
-
-    # Get transaction history
-    transactions = adapter.get_normal_transactions(
-        "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
-        startblock=0,
-        endblock=99999999,
-        page=1,
-        offset=10,
-        sort="desc"
-    )
-
-    # Get ERC20 token transfers
-    token_transfers = adapter.get_erc20_token_transfers(
-        "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
-    )
-```
-
-### Using Etherscan Adapter for Ethereum
-
-```python
-from adapters.etherscan import EtherscanAdapter
-
-# Initialize with Ethereum mainnet (chain ID 1)
-adapter = EtherscanAdapter(chain_id=1)
-
-# Same API methods available for Ethereum mainnet
-```
-
-### Using Zerion Adapter
-
-```python
-from adapters.zerion import ZerionAdapter
-
-# Initialize with API key
-adapter = ZerionAdapter(api_key="your_api_key")
-
-# Or use environment variable ZERION_API_KEY
-adapter = ZerionAdapter()
-
-# Get wallet positions
-positions = adapter.get_wallet_positions(
-    "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
-    currency="usd",
-    **{"page[size]": "10"}
-)
-
-# Get wallet portfolio
-portfolio = adapter.get_wallet_portfolio("wallet_address")
-```
-
-### Creating Custom Adapters
-
-```python
-from adapters.base import BaseAdapter
-
-class CustomAdapter(BaseAdapter):
-    def __init__(self, api_key: str):
-        headers = {"Authorization": f"Bearer {api_key}"}
-        super().__init__(
-            base_url="https://api.custom.com/v1",
-            headers=headers
-        )
-
-    def authenticate(self) -> bool:
-        # Implement authentication logic
-        response = self.get("auth/test")
-        return response is not None
-
-    def validate_response(self, response: dict) -> bool:
-        # Implement response validation
-        return "status" in response and response["status"] == "1"
-```
-
-### Environment Configuration
-
-Set your API credentials as environment variables:
-
-```bash
-# Etherscan API (used for both Ethereum and Base chain)
-export ETHERSCAN_API_KEY=your_etherscan_api_key_here
-
-# Zerion API
-export ZERION_API_KEY=your_zerion_api_key_here
-```
-
-Or create a `.env` file:
-
-```bash
-ETHERSCAN_API_KEY=your_etherscan_api_key_here
-ZERION_API_KEY=your_zerion_api_key_here
-```
-
-## Etherscan API Features
-
-The `EtherscanAdapter` supports comprehensive blockchain data access and works with multiple networks:
-
-### Account Operations
-
-- **Balance Operations**: Single/multiple address Ether balances, historical balance
-- **Transaction Operations**: Normal transactions, internal transactions, transaction by hash
-- **Token Operations**: ERC20/ERC721/ERC1155 token transfers
-- **Mining Operations**: Blocks mined by address, uncle blocks
-- **Advanced Features**: Address funding analysis, beacon chain withdrawals
-
-### Supported Networks
-
-- Ethereum Mainnet (chain_id: 1)
-- Base Chain (chain_id: 8453) - **Used for persona analysis**
-- Ethereum Testnets (Goerli, Sepolia, etc.)
-- Other EVM-compatible networks
-
-## Zerion API Features
-
-The `ZerionAdapter` supports DeFi portfolio management:
-
-### Wallet Operations
-
-- **Positions**: Fungible token positions and balances
-- **Portfolio**: Portfolio overview and valuations
-- **Transactions**: Transaction history across chains
-- **NFTs**: NFT positions and metadata
-
-### Asset & Chain Operations
-
-- **Assets**: Fungible asset information and metadata
-- **Chains**: Supported blockchain networks
-- **Advanced Features**: Testnet support, pagination, filtering
-
-## Running Examples
-
-### Test Current Implementation
-
-```bash
-python main.py
-```
-
-This will run comprehensive tests of the Etherscan adapter including:
-
-- Authentication validation
-- Balance checking (single and multiple addresses)
-- Transaction history retrieval
-- Token transfer analysis
-- Address funding information
-
-## Project Structure
+The codebase has been refactored into a modular structure for better maintainability, testability, and easier onboarding:
 
 ```
-.
-├── adapters/
-│   ├── __init__.py         # Package initialization and exports
-│   ├── base.py            # Abstract base adapter class
-│   ├── etherscan.py       # Etherscan API adapter
-│   └── zerion.py          # Zerion API adapter
-├── persona_analyzer.py    # Base chain persona analysis system
-├── portfolio_analyzer.py  # Portfolio composition and valuation
-├── test_persona.py        # Persona analysis testing script
-├── main.py                # Example usage and testing
-├── requirements.txt       # Python dependencies
-├── README.md             # This file
-└── .gitignore            # Git ignore rules
+├── models/                     # Data models and structures
+│   ├── __init__.py
+│   └── portfolio_models.py     # TokenHolding, NFTHolding, PortfolioSnapshot
+├── services/                   # Business logic services
+│   ├── __init__.py
+│   ├── portfolio_service.py    # Portfolio data fetching and analysis
+│   ├── activity_service.py     # Wallet activity analysis
+│   └── pricing_service.py      # Token and ETH price fetching
+├── persona/                    # Persona classification system
+│   ├── __init__.py
+│   └── persona_classifier.py   # Dynamic persona classification
+├── adapters/                   # External API adapters
+│   ├── __init__.py
+│   ├── base.py                # BaseAdapter abstract class
+│   ├── etherscan.py           # Etherscan API integration
+│   └── zerion.py              # Zerion API integration
+├── portfolio_analyzer_v2.py    # Main modular analyzer
+├── portfolio_analyzer.py       # Legacy monolithic version
+└── requirements.txt
 ```
 
-## API Rate Limits & Best Practices
+## 🎯 Key Benefits of Modular Architecture
 
-### Etherscan API
+### 1. **Separation of Concerns**
 
-- **Rate Limits**: 5 calls/second for free tier, 50 calls/second for pro
-- **Timeout**: Reasonable timeout settings for network requests
-- **Error Handling**: Comprehensive error handling for API responses
-- **Chain Support**: Multi-chain support with chain-specific endpoints
-- **Base Chain**: Uses same API key as Ethereum, configured with chainId 8453
+- **Models**: Pure data structures with business logic
+- **Services**: Focused business logic for specific domains
+- **Persona**: Isolated classification logic
+- **Adapters**: External API integrations
 
-### Zerion API
+### 2. **Easy Testing**
 
-- **Timeout**: Set to 2 minutes (120s) as recommended
-- **Retries**: Stop retries after 2 minutes if no 200 status
-- **URL Length**: Keep request URLs under 2000 characters
-- **Authentication**: Uses Basic auth with base64 encoded API key
+- Each module can be unit tested independently
+- Mock services for integration testing
+- Clear interfaces between components
 
-## Next Steps
+### 3. **Maintainability**
 
-Extend the framework by adding:
+- Changes to one service don't affect others
+- Easy to add new persona types or data sources
+- Clear code organization
 
-1. **More Adapters**: CoinGecko, DeFiPulse, Alchemy, Infura, etc.
-2. **Rate Limiting**: Built-in rate limit handling with backoff strategies
-3. **Caching**: Redis/memory caching for API responses
-4. **Async Support**: AsyncIO for concurrent requests
-5. **Data Persistence**: Database integration for historical data
-6. **Monitoring**: Logging and metrics collection
-7. **Testing**: Unit tests and integration tests
-8. **Documentation**: API documentation with examples
+### 4. **Onboarding Friendly**
 
-## Dependencies
+- New developers can focus on specific modules
+- Clear documentation for each component
+- Logical code organization
 
-- `requests`: HTTP library for API calls
-- `python-dotenv`: Environment variable management
-- `aiohttp`: Async HTTP library for price data fetching
+## 🚀 Quick Start
 
-## Contributing
-
-1. Add new adapters to the `adapters/` directory
-2. Inherit from `BaseAdapter` and implement required methods
-3. Update `adapters/__init__.py` to export your adapter
-4. Add comprehensive error handling and validation
-5. Update documentation and examples
-
-## Persona Analysis
-
-The framework includes a comprehensive persona analysis system that evaluates Base chain wallets against behavioral metrics using **Zerion API for accurate portfolio data** and **Etherscan for transaction history**:
-
-### Quick Start - Persona Analysis
+### Basic Usage
 
 ```python
 import asyncio
-from persona_analyzer import PersonaAnalyzer
+from adapters.etherscan import EtherscanAdapter
+from adapters.zerion import ZerionAdapter
+from portfolio_analyzer_v2 import PortfolioAnalyzer
 
 async def analyze_wallet():
-    # Initialize with both API keys for best accuracy
-    analyzer = PersonaAnalyzer(
-        etherscan_api_key="your_etherscan_api_key",  # For transactions & Base chain data
-        zerion_api_key="your_zerion_api_key"         # For accurate portfolio data (optional)
-    )
+    # Initialize adapters
+    etherscan_adapter = EtherscanAdapter(api_key="your_key", chain_id=8453)
+    zerion_adapter = ZerionAdapter(api_key="your_key")  # Optional
 
-    # Analyze a Base chain wallet
-    results = await analyzer.analyze_wallet("0x742587695473b0fD5e4D8019Ab9E3ba2c9dB8B8B")
+    # Use the modular analyzer
+    async with PortfolioAnalyzer(etherscan_adapter, zerion_adapter) as analyzer:
+        result = await analyzer.analyze_wallet("0x...")
 
-    print(f"Chain: {results['chain']}")  # Shows "Base (Chain ID: 8453)"
-    print(f"Data Sources: {results['data_sources']}")  # Shows "Zerion + Etherscan" or "Etherscan"
-    print(f"Persona Score: {results['persona_score']:.1f}%")
-    print(f"Metrics Passed: {results['metrics_passed']}/{results['total_metrics']}")
+        portfolio = result["portfolio"]
+        activity = result["activity"]
+        persona = result["persona"]
 
-    # Check portfolio summary
-    portfolio = results['portfolio_summary']
-    print(f"Total Value: ${portfolio['total_value_usd']:.2f}")
-    print(f"Top Asset: {portfolio['top_asset'][0]} (${portfolio['top_asset'][1]:.2f})")
+        print(f"Persona: {persona['classification']}")
+        print(f"Portfolio Value: ${portfolio.total_value_usd:.2f}")
 
 asyncio.run(analyze_wallet())
 ```
 
-### Data Sources & Accuracy
-
-The persona analyzer uses multiple data sources for comprehensive analysis:
-
-#### **Zerion API** (Recommended for Portfolio Data)
-
-- ✅ **Accurate token holdings** with real-time balances and prices
-- ✅ **NFT collections** with floor prices and metadata
-- ✅ **Multi-chain support** with Base chain filtering
-- ✅ **Curated token data** with proper symbols and decimals
-- 📍 **Source**: `GET /v1/wallets/{address}/positions/` and `/nft-collections/`
-
-#### **Etherscan API** (Transaction History & Base Chain Data)
-
-- ✅ **Complete transaction history** for activity analysis
-- ✅ **Token transfer events** for holding period calculations
-- ✅ **NFT transfer events** for acquisition dates
-- ✅ **Swap activity detection** through transaction patterns
-- 📍 **Source**: Base chain API with chainId 8453
-
-#### **Fallback Mode** (Etherscan Only)
-
-- ⚠️ **Basic portfolio estimation** when Zerion API key not provided
-- ⚠️ **Limited token metadata** (known Base tokens only)
-- ⚠️ **No real-time pricing** (uses DeFiLlama as backup)
-- ⚠️ **Less accurate NFT valuation**
-
-### Persona Metrics
-
-The system evaluates wallets against 21 behavioral metrics:
-
-#### Portfolio Concentration
-
-- Token holding > 60% portfolio value
-- Token holding > 50% portfolio value
-- Token holding > 70% portfolio value
-
-#### Holding Patterns
-
-- Holding period > 12 months
-- Longest holding token > 3 months
-- Holding period < 3 months
-
-#### Portfolio Value
-
-- Top asset value < $5,000
-- Top asset value $2,000 < x < $5,000
-- Total portfolio value < $5,000
-
-#### Wallet Age
-
-- Wallet created < 2020
-- Wallet created > 2023
-
-#### Asset Types
-
-- Holding ETH
-- Top asset is token (not ETH)
-- Top value is NFT
-
-#### Activity Levels
-
-- Active for over 120 days (last 12 months)
-- Active for over 180 days (last 12 months)
-- Active for over 30 days (last 12 months)
-
-#### Trading Behavior
-
-- Over 100 swap transactions (last 12 months)
-- Interacted with NFT marketplace
-- Total onchain transactions < 50
-
-### Portfolio Analysis
-
-The `PortfolioAnalyzer` provides detailed portfolio insights using both Zerion and Etherscan data:
+### Using Individual Services
 
 ```python
+from services.portfolio_service import PortfolioService
+from services.activity_service import ActivityService
+from services.pricing_service import PricingService
+
+# Use services independently
+async with PortfolioService(etherscan_adapter, zerion_adapter) as portfolio_service:
+    portfolio = await portfolio_service.analyze_portfolio("0x...")
+
+activity_service = ActivityService(etherscan_adapter)
+activity = await activity_service.calculate_activity_score("0x...")
+```
+
+## 📊 Persona Classification System
+
+The system dynamically identifies four persona types:
+
+### 🏆 OG (Conservative)
+
+- Token holding > 60% portfolio value
+- Holding period > 12 months
+- Top asset value < $5,000
+- Wallet created < 2020
+- Holding ETH
+
+### 💪 DeFi Chad (Moderate)
+
+- Longest holding > 3 months
+- Token holding > 50% portfolio value
+- Active for over 120 days in last 12 months
+- Top asset value $2,000 - $5,000
+
+### 🎲 Degen (Aggressive)
+
+- Active for over 180 days within 12 months
+- Over 100 swap transactions within 12 months
+- Holding period < 3 months
+- Token holding > 70% portfolio value
+- Top asset is token (not ETH)
+
+### 🆕 Virgin CT (Newbie)
+
+- Wallet created > 2023
+- Active for over 30 days in last 12 months
+- Total portfolio value < $5,000
+- Total onchain transactions < 50
+
+## 🔧 Module Details
+
+### Models (`models/`)
+
+**`portfolio_models.py`**
+
+- `TokenHolding`: Represents token holdings with valuation and timing data
+- `NFTHolding`: Represents NFT holdings with collection info
+- `PortfolioSnapshot`: Complete portfolio state with computed properties
+
+### Services (`services/`)
+
+**`portfolio_service.py`**
+
+- Fetches portfolio data from Zerion and Etherscan
+- Handles token/NFT holdings analysis
+- Manages pricing integration
+- Provides fallback mechanisms
+
+**`activity_service.py`**
+
+- Analyzes wallet activity patterns
+- Calculates activity scores and metrics
+- Detects swap/DEX interactions
+- Determines wallet creation dates
+
+**`pricing_service.py`**
+
+- Fetches real-time token prices from DeFiLlama
+- Handles ETH price retrieval
+- Manages HTTP sessions efficiently
+
+### Persona Classification (`persona/`)
+
+**`persona_classifier.py`**
+
+- Dynamic persona classification logic
+- Comprehensive criteria evaluation
+- Formatted analysis output
+- Extensible for new persona types
+
+## 🔌 Adding New Features
+
+### Adding a New Persona Type
+
+1. **Update `persona_classifier.py`**:
+
+```python
+# Add new criteria in classify_persona method
+if (new_criteria_check):
+    return "New Persona Type", criteria
+```
+
+2. **Add formatting logic**:
+
+```python
+# Add new case in format_persona_analysis method
+elif persona == "New Persona Type":
+    output.append("✓ New criteria: {check}")
+```
+
+### Adding a New Data Source
+
+1. **Create new adapter** in `adapters/`:
+
+```python
+from adapters.base import BaseAdapter
+
+class NewAPIAdapter(BaseAdapter):
+    # Implement required methods
+```
+
+2. **Update services** to use new adapter:
+
+```python
+# Add integration in portfolio_service.py or create new service
+```
+
+### Adding New Metrics
+
+1. **Extend models** with new properties:
+
+```python
+@property
+def new_metric(self) -> float:
+    # Calculate new metric
+```
+
+2. **Update services** to populate new data:
+
+```python
+# Add calculation logic in appropriate service
+```
+
+## 🧪 Testing Strategy
+
+### Unit Testing
+
+```python
+# Test individual models
+def test_token_holding_properties():
+    holding = TokenHolding(...)
+    assert holding.holding_period_days == expected_days
+
+# Test service methods
+async def test_portfolio_service():
+    service = PortfolioService(mock_adapter)
+    result = await service.analyze_portfolio("0x...")
+    assert result.total_value_usd > 0
+```
+
+### Integration Testing
+
+```python
+# Test full workflow
+async def test_full_analysis():
+    analyzer = PortfolioAnalyzer(etherscan_adapter, zerion_adapter)
+    result = await analyzer.analyze_wallet("0x...")
+    assert result["persona"]["classification"] in VALID_PERSONAS
+```
+
+## 📈 Performance Considerations
+
+### Async Operations
+
+- All I/O operations are async
+- Concurrent API calls where possible
+- Proper session management
+
+### Caching Strategy
+
+```python
+# Add caching to services
+from functools import lru_cache
+
+@lru_cache(maxsize=128)
+async def cached_price_fetch(token_address: str):
+    # Cache expensive operations
+```
+
+### Rate Limiting
+
+```python
+# Add rate limiting to adapters
+import asyncio
+
+async def rate_limited_request():
+    await asyncio.sleep(0.1)  # Respect API limits
+```
+
+## 🔒 Error Handling
+
+### Service Level
+
+```python
+try:
+    result = await service.method()
+except SpecificAPIError:
+    # Handle specific errors
+    return fallback_result
+except Exception as e:
+    # Log and handle general errors
+    logger.error(f"Unexpected error: {e}")
+    return default_result
+```
+
+### Analyzer Level
+
+```python
+# Graceful degradation
+if not zerion_adapter:
+    # Fall back to Etherscan-only analysis
+```
+
+## 🚀 Migration from Legacy
+
+To migrate from the monolithic `portfolio_analyzer.py`:
+
+1. **Update imports**:
+
+```python
+# Old
 from portfolio_analyzer import PortfolioAnalyzer
-from adapters.etherscan import EtherscanAdapter
-from adapters.zerion import ZerionAdapter
 
-async def analyze_portfolio():
-    # Create adapters
-    base_adapter = EtherscanAdapter(api_key="your_etherscan_key", chain_id=8453)
-    zerion_adapter = ZerionAdapter(api_key="your_zerion_key")  # Optional but recommended
-
-    # Use context manager for proper async session handling
-    async with PortfolioAnalyzer(base_adapter, zerion_adapter) as analyzer:
-        portfolio = await analyzer.analyze_portfolio("0x742587695473b0fD5e4D8019Ab9E3ba2c9dB8B8B")
-
-        print(f"Total Value: ${portfolio.total_value_usd:.2f}")
-        print(f"Token Concentration: {portfolio.token_concentration_ratio:.1%}")
-        print(f"Longest Holding: {portfolio.longest_holding_period} days")
-        print(f"Top Asset is NFT: {portfolio.is_top_asset_nft}")
-
-        # Show token holdings with acquisition dates
-        for holding in portfolio.token_holdings[:5]:
-            print(f"  {holding.symbol}: {holding.balance:.4f} (${holding.value_usd:.2f})")
-            print(f"    Held for: {holding.holding_period_days} days")
-
-        # Analyze trading activity (uses Etherscan data)
-        activity = await analyzer.analyze_swap_activity("0x742587695473b0fD5e4D8019Ab9E3ba2c9dB8B8B")
-        print(f"Swap Count: {activity['swap_count']}")
-        print(f"Unique Tokens: {activity['unique_tokens']}")
-
-asyncio.run(analyze_portfolio())
+# New
+from portfolio_analyzer_v2 import PortfolioAnalyzer
 ```
 
-### Testing Persona Analysis
+2. **API remains the same**:
 
-Use the included test script to analyze Base chain wallets:
-
-```bash
-# Test single wallet
-python test_persona.py
-
-# Compare multiple wallets
-python test_persona.py compare
+```python
+# Same usage pattern
+async with PortfolioAnalyzer(adapters) as analyzer:
+    result = await analyzer.analyze_wallet(address)
 ```
 
-### Persona Classifications
+3. **Access to individual services**:
 
-Based on the analysis score, wallets are classified as:
-
-- **🏆 Power User (80%+)**: Highly active DeFi user with diverse portfolio
-- **📈 Active Trader (60-79%)**: Regular DeFi participant with moderate activity
-- **🌱 Growing User (40-59%)**: Developing DeFi user with some activity
-- **👶 New User (20-39%)**: Beginning DeFi journey with limited activity
-- **😴 Inactive User (<20%)**: Minimal or no recent DeFi activity
-
-## Environment Variables
-
-Create a `.env` file in the project root:
-
-```bash
-# Required for Base chain analysis
-ETHERSCAN_API_KEY=your_etherscan_api_key_here
-
-# Recommended for accurate portfolio data
-ZERION_API_KEY=your_zerion_api_key_here
+```python
+# New capability - use services independently
+portfolio_service = analyzer.portfolio_service
+activity_service = analyzer.activity_service
 ```
 
-Get API keys from:
+## 📚 Next Steps
 
-- **Etherscan**: https://etherscan.io/apis (works for both Ethereum and Base chain)
-- **Zerion**: https://developers.zerion.io/ (for accurate portfolio data)
+1. **Add comprehensive tests** for each module
+2. **Implement caching** for expensive operations
+3. **Add configuration management** for different environments
+4. **Create CLI interface** for batch processing
+5. **Add database integration** for historical analysis
+6. **Implement webhook support** for real-time updates
 
-### API Key Benefits
+## 🤝 Contributing
 
-| Feature             | Etherscan Only    | Etherscan + Zerion |
-| ------------------- | ----------------- | ------------------ |
-| Transaction History | ✅ Complete       | ✅ Complete        |
-| Activity Analysis   | ✅ Full           | ✅ Full            |
-| Token Holdings      | ⚠️ Basic          | ✅ Accurate        |
-| Token Prices        | ⚠️ External API   | ✅ Real-time       |
-| NFT Collections     | ⚠️ Transfer-based | ✅ Curated         |
-| Portfolio Valuation | ⚠️ Estimated      | ✅ Precise         |
+1. **Choose a module** to work on based on your expertise
+2. **Follow the established patterns** in each module
+3. **Add tests** for new functionality
+4. **Update documentation** for any API changes
+5. **Consider backward compatibility** when making changes
 
-## Base Chain Configuration
-
-The persona analysis system automatically configures the EtherscanAdapter for Base chain:
-
-- **Chain ID**: 8453 (Base mainnet)
-- **API Endpoint**: Uses Etherscan's multi-chain API
-- **Token Support**: Includes major Base chain tokens (USDC, WETH, DAI, USDbC)
-- **Price Data**: Real-time prices via DeFiLlama API
+The modular architecture makes it easy to contribute to specific areas without understanding the entire codebase!
